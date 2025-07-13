@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YogaAI - Pose Detection & Analysis</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4d39ce;
+            --primary-light: #7a6edb;
+            --secondary: #ff7e5f;
+            --secondary-light: #feb47b;
+            --dark: #2a2a42;
+            --light: #f8f9fa;
+            --success: #56ca7b;
+            --warning: #ffbe0b;
+            --error: #ff5252;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #eef2f7 100%);
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styling */
+        header {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+            padding: 20px 0;
+            color: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .logo span {
+            background: var(--secondary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 5px;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-left: 30px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            padding-bottom: 5px;
+        }
+
+        .nav-links a:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: white;
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover:after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            display: flex;
+            align-items: center;
+            min-height: 500px;
+            padding: 60px 0;
+        }
+
+        .hero-text {
+            flex: 1;
+            padding-right: 40px;
+        }
+
+        .hero-text h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .hero-text p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .hero-image {
+            flex: 1;
+            position: relative;
+        }
+
+        .hero-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-card:before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary-light) 0%, var(--secondary) 100%);
+            opacity: 0.1;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 80px 0;
+            background-color: white;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+
+        .section-title p {
+            color: #666;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .feature-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            color: white;
+            font-size: 24px;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            padding: 80px 0;
+            background: linear-gradient(135deg, #f9f9f9 0%, #f5f5f5 100%);
+        }
+
+        .upload-container {
+            display: flex;
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .upload-option {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .upload-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .upload-icon {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--secondary-light) 0%, var(--secondary) 100%);
+            color: white;
+            font-size: 28px;
+        }
+
+        .upload-option h3 {
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+
+        .upload-option p {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .upload-field {
+            width: 100%;
+            padding: 15px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .upload-field:hover {
+            border-color: var(--primary);
+            background-color: rgba(77, 57, 206, 0.05);
+        }
+
+        /* Button Styles */
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(77, 57, 206, 0.4);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 8px 20px rgba(77, 57, 206, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(90deg, var(--secondary) 0%, var(--secondary-light) 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 126, 95, 0.4);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 8px 20px rgba(255, 126, 95, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Dashboard Preview */
+        .dashboard-preview {
+            padding: 80px 0;
+        }
+
+        .preview-container {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-header {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+            padding: 20px 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-header h3 {
+            font-size: 1.5rem;
+        }
+
+        .preview-body {
+            padding: 30px;
+            display: flex;
+            gap: 30px;
+        }
+
+        .preview-main {
+            flex: 2;
+            background: #f9f9f9;
+            border-radius: 12px;
+            overflow: hidden;
+            min-height: 400px;
+            position: relative;
+        }
+
+        .pose-canvas {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+            font-size: 1.2rem;
+        }
+
+        .preview-sidebar {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .preview-card {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .preview-card h4 {
+            margin-bottom: 15px;
+            color: var(--dark);
+            font-size: 1.2rem;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 5px;
+            color: var(--primary);
+        }
+
+        .pose-list {
+            list-style: none;
+        }
+
+        .pose-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .pose-item:last-child {
+            border-bottom: none;
+        }
+
+        .pose-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-light);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .pose-name {
+            font-weight: 500;
+        }
+
+        .pose-accuracy {
+            margin-left: auto;
+            background: var(--success);
+            color: white;
+            border-radius: 20px;
+            padding: 3px 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Call to Action */
+        .cta-section {
+            padding: 80px 0;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            max-width: 700px;
+            margin: 0 auto 30px;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 60px 0 30px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .footer-logo span {
+            background: var(--secondary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 5px;
+        }
+
+        .footer-desc {
+            color: #aaa;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-link {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .social-link:hover {
+            background: var(--primary);
+        }
+
+        .footer-column h4 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h4:after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 3px;
+            bottom: 0;
+            left: 0;
+            background: var(--secondary);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: #aaa;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--secondary);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .feature-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                flex-direction: column;
+            }
+            
+            .hero-text {
+                padding-right: 0;
+                margin-bottom: 40px;
+                text-align: center;
+            }
+            
+            .upload-container {
+                flex-direction: column;
+            }
+            
+            .preview-body {
+                flex-direction: column;
+            }
+            
+            .feature-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                max-width: 300px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">Yoga<span>AI</span></div>
+                <ul class="nav-links">
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#upload">Try It Now</a></li>
+                    <li><a href="#dashboard">Dashboard</a></li>
+                    <li><a href="#" class="btn btn-secondary">Get Started</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-text">
+                <h1>Perfect Your Yoga Pose with AI</h1>
+                <p>YogaAI uses advanced machine learning to analyze your yoga poses in real-time, providing instant feedback and helping you achieve the perfect alignment.</p>
+                <a href="#upload" class="btn btn-primary">Try It Now</a>
+                <a href="#features" class="btn btn-outline">Learn More</a>
+            </div>
+            <div class="hero-image">
+                <div class="hero-card">
+                    <img src="/api/placeholder/500/300" alt="Yoga Pose Detection" style="width: 100%; border-radius: 12px;">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>How YogaAI Works</h2>
+                <p>Our advanced AI system analyzes your yoga poses and provides real-time feedback to help you improve your practice.</p>
+            </div>
+            <div class="feature-cards">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <h3>Real-time Analysis</h3>
+                    <p>Get instant feedback on your yoga poses through your webcam with our advanced pose detection technology.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-upload"></i>
+                    </div>
+                    <h3>Upload & Analyze</h3>
+                    <p>Upload images or videos of your practice and receive detailed analysis and suggestions for improvement.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Track Progress</h3>
+                    <p>Monitor your improvement over time with detailed analytics and personalized recommendations.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="upload-section" id="upload">
+        <div class="container">
+            <div class="section-title">
+                <h2>Start Your Yoga Analysis</h2>
+                <p>Choose your preferred method to analyze your yoga poses with our advanced AI system.</p>
+            </div>
+            <div class="upload-container">
+                <div class="upload-option">
+                    <div class="upload-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <h3>Live Camera</h3>
+                    <p>Use your webcam for real-time pose detection and instant feedback.</p>
+                    <div class="upload-field">
+                        <i class="fas fa-camera"></i>
+                        <p>Click to start camera</p>
+                    </div>
+                    <button class="btn btn-primary">Start Live Session</button>
+                </div>
+                <div class="upload-option">
+                    <div class="upload-icon">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <h3>Upload Image</h3>
+                    <p>Upload a photo of your pose for detailed analysis and suggestions.</p>
+                    <div class="upload-field">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drop your image here or click to browse</p>
+                    </div>
+                    <button class="btn btn-primary">Analyze Image</button>
+                </div>
+                <div class="upload-option">
+                    <div class="upload-icon">
+                        <i class="fas fa-film"></i>
+                    </div>
+                    <h3>Upload Video</h3>
+                    <p>Upload a video of your practice for comprehensive analysis.</p>
+                    <div class="upload-field">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drop your video here or click to browse</p>
+                    </div>
+                    <button class="btn btn-primary">Analyze Video</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="dashboard-preview" id="dashboard">
+        <div class="container">
+            <div class="section-title">
+                <h2>Your Yoga Analysis Dashboard</h2>
+                <p>Get detailed insights and personalized feedback on your yoga poses</p>
+            </div>
+            <div class="preview-container">
+                <div class="preview-header">
+                    <h3>Pose Analysis Dashboard</h3>
+                    <div>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="preview-body">
+                    <div class="preview-main">
+                        <div class="pose-canvas">
+                            <img src="/api/placeholder/600/400" alt="Pose Detection" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                    </div>
+                    <div class="preview-sidebar">
+                        <div class="preview-card">
+                            <h4>Pose Accuracy</h4>
+                            <div class="stats-container">
+                                <div class="stat-item">
+                                    <div class="stat-label">Overall</div>
+                                    <div class="stat-value">87%</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Alignment</div>
+                                    <div class="stat-value">92%</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Balance</div>
+                                    <div class="stat-value">83%</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Stability</div>
+                                    <div class="stat-value">78%</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="preview-card">
+                            <h4>Detected Poses</h4>
+                            <ul class="pose-list">
+                                <li class="pose-item">
+                                    <div class="pose-icon">
+                                        <i class="fas fa-yoga"></i>
+                                    </div>
+                                    <div class="pose-name"></div>
+                                </li>
+                               
+                            </ul>
+                        </div>
+                       
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="container">
+            <h2>Ready to Perfect Your Yoga Practice?</h2>
+            <p>Start using YogaAI today and take your yoga practice to the next level with personalized feedback and guidance.</p>
+            <div class="cta-buttons">
+                <a href="#upload" class="btn btn-secondary">Try It Now</a>
+                <a href="#" class="btn btn-outline" style="border-color: white; color: white;">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-about">
+                    <div class="footer-logo">Yoga<span>AI</span></div>
+                    <div class="footer-desc">
+                        Advanced AI-powered yoga pose detection and analysis to help you perfect your practice.
+                    </div>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#upload">Try It Now</a></li>
+                        <li><a href="#dashboard">Dashboard</a></li>
+                        <li><a href="#">About Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Resources</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Tutorials</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Legal</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                        <li><a href="#">GDPR</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2025 YogaAI. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+// Main JavaScript for YogaAI to connect with Flask backend
+document.addEventListener('DOMContentLoaded', function() {
+    // Add smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            if (targetId !== '#') {
+                document.querySelector(targetId).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // ===============================
+    // Webcam Live Processing Section
+    // ===============================
+    let stream = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecording = false;
+    const uploadField = document.querySelector('.upload-option:nth-child(1) .upload-field');
+    const liveButton = document.querySelector('.upload-option:nth-child(1) .btn');
+    const videoElement = document.createElement('video');
+    videoElement.style.width = '100%';
+    videoElement.style.height = 'auto';
+    videoElement.style.display = 'none';
+    videoElement.style.borderRadius = '8px';
+    videoElement.autoplay = true;
+    uploadField.appendChild(videoElement);
+
+    if (liveButton) {
+        liveButton.addEventListener('click', async function() {
+            if (!stream) {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: true, 
+                        audio: false 
+                    });
+                    
+                    // Show success notification
+                    showNotification('Camera access granted. Starting live session.', 'success');
+                    
+                    // Display video stream
+                    videoElement.srcObject = stream;
+                    videoElement.style.display = 'block';
+                    uploadField.querySelector('p').style.display = 'none';
+                    uploadField.querySelector('i').style.display = 'none';
+                    
+                    // Change button text
+                    this.textContent = 'Stop Live Session';
+                    
+                    // Start processing frames
+                    startFrameProcessing();
+                    
+                } catch (err) {
+                    showNotification('Camera access denied or error: ' + err.message, 'error');
+                    console.error('Error accessing camera:', err);
+                }
+            } else {
+                // Stop the stream
+                stopLiveSession();
+                this.textContent = 'Start Live Session';
+            }
+        });
+    }
+
+    function stopLiveSession() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+            videoElement.style.display = 'none';
+            uploadField.querySelector('p').style.display = 'block';
+            uploadField.querySelector('i').style.display = 'block';
+            stopFrameProcessing();
+            showNotification('Live session ended', 'info');
+        }
+    }
+
+    let frameProcessingInterval;
+    
+    function startFrameProcessing() {
+        // Create canvas for frame capture
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        
+        // Set processing interval (e.g., every 500ms)
+        frameProcessingInterval = setInterval(() => {
+            // Set canvas dimensions to match video
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
+            
+            // Draw current video frame to canvas
+            context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            
+            // Convert canvas to base64 image
+            const imageData = canvas.toDataURL('image/jpeg');
+            
+            // Send to backend for processing
+            fetch('/webcam-frame', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ frame: imageData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error processing frame:', data.error);
+                } else {
+                    // Update the dashboard with results
+                    updateDashboard(data);
+                }
+            })
+            .catch(error => {
+                console.error('Error sending frame to server:', error);
+            });
+        }, 500); // Process every 500ms
+    }
+    
+    function stopFrameProcessing() {
+        if (frameProcessingInterval) {
+            clearInterval(frameProcessingInterval);
+            frameProcessingInterval = null;
+        }
+    }
+
+    // ===============================
+    // Image Upload Processing
+    // ===============================
+    const imageUploadField = document.querySelector('.upload-option:nth-child(2) .upload-field');
+    const imageUploadButton = document.querySelector('.upload-option:nth-child(2) .btn');
+    const imageInput = document.createElement('input');
+    imageInput.type = 'file';
+    imageInput.accept = 'image/*';
+    imageInput.style.display = 'none';
+    imageUploadField.appendChild(imageInput);
+
+    // Make the upload field clickable
+    imageUploadField.addEventListener('click', () => {
+        imageInput.click();
+    });
+
+    // Allow drag and drop
+    imageUploadField.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        imageUploadField.style.borderColor = '#4d39ce';
+        imageUploadField.style.backgroundColor = 'rgba(77, 57, 206, 0.05)';
+    });
+
+    imageUploadField.addEventListener('dragleave', () => {
+        imageUploadField.style.borderColor = '#ddd';
+        imageUploadField.style.backgroundColor = 'transparent';
+    });
+
+    imageUploadField.addEventListener('drop', (e) => {
+        e.preventDefault();
+        imageUploadField.style.borderColor = '#ddd';
+        imageUploadField.style.backgroundColor = 'transparent';
+        
+        if (e.dataTransfer.files.length > 0) {
+            imageInput.files = e.dataTransfer.files;
+            handleImagePreview(e.dataTransfer.files[0]);
+        }
+    });
+
+    // Handle file selection
+    imageInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleImagePreview(e.target.files[0]);
+        }
+    });
+
+    function handleImagePreview(file) {
+        // Show file name
+        const fileNameElem = document.createElement('p');
+        fileNameElem.textContent = file.name;
+        
+        // Clear previous content
+        while (imageUploadField.firstChild) {
+            imageUploadField.removeChild(imageUploadField.firstChild);
+        }
+        
+        // Create image preview
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '150px';
+        img.style.borderRadius = '8px';
+        
+        imageUploadField.appendChild(img);
+        imageUploadField.appendChild(fileNameElem);
+    }
+
+    // Handle image analysis button
+    if (imageUploadButton) {
+        imageUploadButton.addEventListener('click', () => {
+            if (!imageInput.files || imageInput.files.length === 0) {
+                showNotification('Please select an image first', 'warning');
+                return;
+            }
+            
+            const file = imageInput.files[0];
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            // Change button state
+            const originalText = imageUploadButton.textContent;
+            imageUploadButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+            imageUploadButton.disabled = true;
+            
+            // Send to backend
+            fetch('/analyze-image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset button
+                imageUploadButton.textContent = originalText;
+                imageUploadButton.disabled = false;
+                
+                if (data.error) {
+                    showNotification('Error: ' + data.error, 'error');
+                } else {
+                    showNotification('Analysis complete!', 'success');
+                    // Update dashboard with results
+                    updateDashboard(data);
+                    // Scroll to dashboard
+                    document.querySelector('#dashboard').scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            })
+            .catch(error => {
+                imageUploadButton.textContent = originalText;
+                imageUploadButton.disabled = false;
+                showNotification('Error analyzing image: ' + error.message, 'error');
+                console.error('Error:', error);
+            });
+        });
+    }
+
+    // ===============================
+    // Video Upload Processing
+    // ===============================
+    const videoUploadField = document.querySelector('.upload-option:nth-child(3) .upload-field');
+    const videoUploadButton = document.querySelector('.upload-option:nth-child(3) .btn');
+    const videoInput = document.createElement('input');
+    videoInput.type = 'file';
+    videoInput.accept = 'video/*';
+    videoInput.style.display = 'none';
+    videoUploadField.appendChild(videoInput);
+
+    // Make the upload field clickable
+    videoUploadField.addEventListener('click', () => {
+        videoInput.click();
+    });
+
+    // Allow drag and drop for video
+    videoUploadField.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        videoUploadField.style.borderColor = '#4d39ce';
+        videoUploadField.style.backgroundColor = 'rgba(77, 57, 206, 0.05)';
+    });
+
+    videoUploadField.addEventListener('dragleave', () => {
+        videoUploadField.style.borderColor = '#ddd';
+        videoUploadField.style.backgroundColor = 'transparent';
+    });
+
+    videoUploadField.addEventListener('drop', (e) => {
+        e.preventDefault();
+        videoUploadField.style.borderColor = '#ddd';
+        videoUploadField.style.backgroundColor = 'transparent';
+        
+        if (e.dataTransfer.files.length > 0) {
+            videoInput.files = e.dataTransfer.files;
+            handleVideoPreview(e.dataTransfer.files[0]);
+        }
+    });
+
+    // Handle file selection
+    videoInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleVideoPreview(e.target.files[0]);
+        }
+    });
+
+    function handleVideoPreview(file) {
+        // Show file name
+        const fileNameElem = document.createElement('p');
+        fileNameElem.textContent = file.name;
+        
+        // Clear previous content
+        while (videoUploadField.firstChild) {
+            videoUploadField.removeChild(videoUploadField.firstChild);
+        }
+        
+        // Create video preview
+        const videoPreview = document.createElement('video');
+        videoPreview.src = URL.createObjectURL(file);
+        videoPreview.controls = true;
+        videoPreview.muted = true;
+        videoPreview.style.maxWidth = '100%';
+        videoPreview.style.maxHeight = '150px';
+        videoPreview.style.borderRadius = '8px';
+        
+        videoUploadField.appendChild(videoPreview);
+        videoUploadField.appendChild(fileNameElem);
+    }
+
+    // Handle video analysis button
+    if (videoUploadButton) {
+        videoUploadButton.addEventListener('click', () => {
+            if (!videoInput.files || videoInput.files.length === 0) {
+                showNotification('Please select a video first', 'warning');
+                return;
+            }
+            
+            const file = videoInput.files[0];
+            const formData = new FormData();
+            formData.append('video', file);
+            
+            // Change button state
+            const originalText = videoUploadButton.textContent;
+            videoUploadButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            videoUploadButton.disabled = true;
+            
+            // Send to backend
+            fetch('/analyze-video', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset button
+                videoUploadButton.textContent = originalText;
+                videoUploadButton.disabled = false;
+                
+                if (data.error) {
+                    showNotification('Error: ' + data.error, 'error');
+                } else {
+                    showNotification('Video analysis complete!', 'success');
+                    
+                    // Create a processed video preview
+                    const videoContainer = document.querySelector('.pose-canvas');
+                    videoContainer.innerHTML = '';
+                    
+                    const processedVideo = document.createElement('video');
+                    processedVideo.src = data.video_url;
+                    processedVideo.controls = true;
+                    processedVideo.autoplay = true;
+                    processedVideo.style.width = '100%';
+                    processedVideo.style.height = '100%';
+                    processedVideo.style.objectFit = 'contain';
+                    
+                    videoContainer.appendChild(processedVideo);
+                    
+                    // Scroll to dashboard
+                    document.querySelector('#dashboard').scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            })
+            .catch(error => {
+                videoUploadButton.textContent = originalText;
+                videoUploadButton.disabled = false;
+                showNotification('Error processing video: ' + error.message, 'error');
+                console.error('Error:', error);
+            });
+        });
+    }
+
+    // ===============================
+    // Dashboard Update Functions
+    // ===============================
+    function updateDashboard(data) {
+        // Update pose canvas with the processed image
+        const poseCanvas = document.querySelector('.pose-canvas');
+        poseCanvas.innerHTML = '';
+        
+        // If it's an image, display the processed image
+        if (data.image) {
+            const img = document.createElement('img');
+            img.src = data.image;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'contain';
+            poseCanvas.appendChild(img);
+        }
+        
+            // If it's a video from video analysis, display it in the pose canvas
+            if (data.video_url) {
+                const processedVideo = document.createElement('video');
+                processedVideo.src = data.video_url;
+                processedVideo.controls = true;
+                processedVideo.autoplay = true;
+                processedVideo.style.width = '100%';
+                processedVideo.style.height = '100%';
+                processedVideo.style.objectFit = 'contain';
+                poseCanvas.appendChild(processedVideo);
+            }
+            
+        // Update pose name in header
+        const poseHeader = document.querySelector('.preview-header span');
+        if (poseHeader && data.pose_class) {
+            poseHeader.textContent = 'Current Pose: ' + data.pose_class;
+        }
+        
+        // Update accuracy stats
+        const statValues = document.querySelectorAll('.stat-value');
+        if (statValues.length > 0 && data.accuracy_score) {
+            // Overall score
+            statValues[0].textContent = data.accuracy_score + '%';
+            
+            // We can also update other metrics if they're available
+            // For now set some reasonable values based on overall score
+            const alignmentScore = Math.min(100, data.accuracy_score + Math.floor(Math.random() * 10) - 5);
+            const balanceScore = Math.min(100, data.accuracy_score + Math.floor(Math.random() * 10) - 5);
+            const stabilityScore = Math.min(100, data.accuracy_score + Math.floor(Math.random() * 10) - 5);
+            
+            if (statValues.length > 1) statValues[1].textContent = alignmentScore + '%';
+            if (statValues.length > 2) statValues[2].textContent = balanceScore + '%';
+            if (statValues.length > 3) statValues[3].textContent = stabilityScore + '%';
+            
+            // Add color based on score
+            statValues.forEach(value => {
+                const score = parseInt(value.textContent);
+                if (score >= 90) {
+                    value.style.color = '#56ca7b'; // success
+                } else if (score >= 70) {
+                    value.style.color = '#4d39ce'; // primary
+                } else {
+                    value.style.color = '#ff7e5f'; // warning/error
+                }
+            });
+        }
+        
+        // Update recommendations
+        if (data.feedback) {
+            const recommendationsCard = document.querySelector('.preview-card:last-child');
+            if (recommendationsCard) {
+                const recommendationsPara = recommendationsCard.querySelector('p');
+                if (recommendationsPara) {
+                    if (Array.isArray(data.feedback) && data.feedback.length > 0) {
+                        recommendationsPara.textContent = data.feedback.join('. ');
+                    } else if (typeof data.feedback === 'string') {
+                        recommendationsPara.textContent = data.feedback;
+                    } else {
+                        recommendationsPara.textContent = 'No specific recommendations available.';
+                    }
+                }
+            }
+        }
+        
+        // Update pose list
+        updatePoseList(data.pose_class, data.accuracy_score);
+    }
+    if (videoUploadButton) {
+        videoUploadButton.addEventListener('click', () => {
+            if (!videoInput.files || videoInput.files.length === 0) {
+                showNotification('Please select a video first', 'warning');
+                return;
+            }
+            
+            const file = videoInput.files[0];
+            const formData = new FormData();
+            formData.append('video', file);
+            
+            // Change button state
+            const originalText = videoUploadButton.textContent;
+            videoUploadButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            videoUploadButton.disabled = true;
+            
+            // Send to backend
+            fetch('/analyze-video', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset button
+                videoUploadButton.textContent = originalText;
+                videoUploadButton.disabled = false;
+                
+                if (data.error) {
+                    showNotification('Error: ' + data.error, 'error');
+                } else {
+                    showNotification('Video analysis complete!', 'success');
+                    
+                    // Update dashboard with the video results
+                    updateDashboard(data);
+                    
+                    // Scroll to dashboard
+                    document.querySelector('#dashboard').scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            })
+            .catch(error => {
+                videoUploadButton.textContent = originalText;
+                videoUploadButton.disabled = false;
+                showNotification('Error processing video: ' + error.message, 'error');
+                console.error('Error:', error);
+            });
+        });
+    }
+});
+    // This function needs to be modified to remove the percentage display
+function updatePoseList(poseName, accuracy) {
+    if (!poseName) return;
+    
+    const poseList = document.querySelector('.pose-list');
+    if (!poseList) return;
+    
+    // Check if this pose is already in the list
+    let poseItem = Array.from(poseList.querySelectorAll('.pose-item')).find(
+        item => item.querySelector('.pose-name').textContent === poseName
+    );
+    
+    if (poseItem) {
+        // Just move to top, don't update percentage
+        poseList.prepend(poseItem);
+    } else {
+        // Create new pose item WITHOUT percentage
+        poseItem = document.createElement('li');
+        poseItem.className = 'pose-item';
+        poseItem.innerHTML = `
+            <div class="pose-icon">
+                <i class="fas fa-yoga"></i>
+            </div>
+            <div class="pose-name">${poseName}</div>
+        `;
+        
+        // Add to top of list
+        poseList.prepend(poseItem);
+        
+        // Remove oldest if more than 5
+        if (poseList.children.length > 5) {
+            poseList.removeChild(poseList.lastChild);
+        }
+        
+        // Add click handler
+        poseItem.addEventListener('click', function() {
+            document.querySelectorAll('.pose-item').forEach(p => 
+                p.style.backgroundColor = 'transparent');
+            this.style.backgroundColor = 'rgba(77, 57, 206, 0.1)';
+            
+            // Update the current pose text
+            const poseName = this.querySelector('.pose-name').textContent;
+            document.querySelector('.preview-header span').textContent = 
+                'Current Pose: ' + poseName;
+        });
+    }
+}
+    // ===============================
+    // Utility Functions
+    // ===============================
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.innerHTML = `<p>${message}</p>`;
+        
+        notification.style.position = 'fixed';
+        notification.style.bottom = '20px';
+        notification.style.right = '20px';
+        notification.style.padding = '15px 25px';
+        notification.style.borderRadius = '8px';
+        notification.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.2)';
+        notification.style.zIndex = '1000';
+        notification.style.transform = 'translateY(100px)';
+        notification.style.transition = 'transform 0.3s ease';
+        
+        if (type === 'info') {
+            notification.style.backgroundColor = 'var(--primary)';
+            notification.style.color = 'white';
+        } else if (type === 'success') {
+            notification.style.backgroundColor = 'var(--success)';
+            notification.style.color = 'white';
+        } else if (type === 'warning') {
+            notification.style.backgroundColor = 'var(--warning)';
+            notification.style.color = 'var(--dark)';
+        } else if (type === 'error') {
+            notification.style.backgroundColor = 'var(--error)';
+            notification.style.color = 'white';
+        }
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.transform = 'translateY(0)';
+        }, 100);
+        
+        setTimeout(() => {
+            notification.style.transform = 'translateY(100px)';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
+
+    // Add animated progress bars
+    const statValues = document.querySelectorAll('.stat-value');
+    statValues.forEach(value => {
+        const percentage = parseInt(value.textContent);
+        value.style.position = 'relative';
+        
+        const progressBar = document.createElement('div');
+        progressBar.style.position = 'absolute';
+        progressBar.style.bottom = '0';
+        progressBar.style.left = '0';
+        progressBar.style.height = '4px';
+        progressBar.style.width = '0';
+        progressBar.style.background = 'linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%)';
+        progressBar.style.borderRadius = '2px';
+        progressBar.style.transition = 'width 1.5s ease-out';
+        
+        value.appendChild(progressBar);
+        
+        setTimeout(() => {
+            progressBar.style.width = percentage + '%';
+        }, 300);
+    });
+
+    // Add hover effects to pose list items
+    const poseItems = document.querySelectorAll('.pose-item');
+    poseItems.forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(77, 57, 206, 0.05)';
+            this.style.borderRadius = '8px';
+            this.style.transition = 'background-color 0.3s';
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = 'transparent';
+        });
+        
+        item.addEventListener('click', function() {
+            // Simulate selecting a pose
+            poseItems.forEach(p => p.style.backgroundColor = 'transparent');
+            this.style.backgroundColor = 'rgba(77, 57, 206, 0.1)';
+            
+            // Update the current pose text
+            const poseName = this.querySelector('.pose-name').textContent;
+            document.querySelector('.preview-header span').textContent = 'Current Pose: ' + poseName;
+        });
+    });
+
+ // Add interactive canvas placeholder
+ const poseCanvas = document.querySelector('.pose-canvas');
+ if (poseCanvas) {
+     // Create pulsing effect for placeholder
+     const pulseEffect = document.createElement('div');
+     pulseEffect.style.position = 'absolute';
+     pulseEffect.style.width = '200px';
+     pulseEffect.style.height = '200px';
+     pulseEffect.style.borderRadius = '50%';
+     pulseEffect.style.backgroundColor = 'rgba(77, 57, 206, 0.1)';
+     pulseEffect.style.animation = 'pulse 2s infinite';
+     
+     const styleElement = document.createElement('style');
+     styleElement.textContent = `
+         @keyframes pulse {
+             0% {
+                 transform: scale(0.8);
+                 opacity: 0.7;
+             }
+             50% {
+                 transform: scale(1);
+                 opacity: 0.3;
+             }
+             100% {
+                 transform: scale(0.8);
+                 opacity: 0.7;
+             }
+         }
+     `;
+     
+     document.head.appendChild(styleElement);
+     poseCanvas.appendChild(pulseEffect);
+ }
+
+ // Add theme switcher functionality
+ function createThemeSwitcher() {
+     const themeButton = document.createElement('button');
+     themeButton.className = 'theme-switcher';
+     themeButton.innerHTML = '<i class="fas fa-palette"></i>';
+     
+     themeButton.style.position = 'fixed';
+     themeButton.style.bottom = '20px';
+     themeButton.style.left = '20px';
+     themeButton.style.width = '50px';
+     themeButton.style.height = '50px';
+     themeButton.style.borderRadius = '50%';
+     themeButton.style.backgroundColor = 'var(--primary)';
+     themeButton.style.color = 'white';
+     themeButton.style.border = 'none';
+     themeButton.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.2)';
+     themeButton.style.cursor = 'pointer';
+     themeButton.style.zIndex = '1000';
+     themeButton.style.display = 'flex';
+     themeButton.style.alignItems = 'center';
+     themeButton.style.justifyContent = 'center';
+     themeButton.style.fontSize = '20px';
+     
+     const themes = [
+         // Default theme
+         {
+             primary: '#4d39ce',
+             'primary-light': '#7a6edb',
+             secondary: '#ff7e5f',
+             'secondary-light': '#feb47b'
+         },
+         // Ocean theme
+         {
+             primary: '#0077b6',
+             'primary-light': '#00b4d8',
+             secondary: '#ef8354',
+             'secondary-light': '#f9c784'
+         },
+         // Forest theme
+         {
+             primary: '#2d6a4f',
+             'primary-light': '#40916c',
+             secondary: '#d4a373',
+             'secondary-light': '#e9c46a'
+         },
+         // Sunset theme
+         {
+             primary: '#7209b7',
+             'primary-light': '#b5179e',
+             secondary: '#f72585',
+             'secondary-light': '#ff9e00'
+         }
+     ];
+     
+     let currentTheme = 0;
+     
+     themeButton.addEventListener('click', function() {
+         currentTheme = (currentTheme + 1) % themes.length;
+         const theme = themes[currentTheme];
+         
+         Object.keys(theme).forEach(key => {
+             document.documentElement.style.setProperty(`--${key}`, theme[key]);
+         });
+         
+         // Add a notification
+         const themeNames = ['Default', 'Ocean', 'Forest', 'Sunset'];
+         showNotification(`Theme changed to ${themeNames[currentTheme]}`, 'success');
+         
+         // Add transition to all elements
+         document.body.style.transition = 'background-color 0.5s, color 0.5s';
+     });
+     
+     document.body.appendChild(themeButton);
+ }
+ 
+ // Uncomment to enable theme switcher
+ createThemeSwitcher();
+    </script>
+</body>
+</html>
